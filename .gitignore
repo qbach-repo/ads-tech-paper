@@ -1,0 +1,6 @@
+# Transient output written by scripts/discover_papers.py during a workflow
+# run. Only discovery/seen_ids.json is meant to be committed.
+discovery/candidates.json
+
+__pycache__/
+*.pyc

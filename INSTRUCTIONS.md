@@ -58,3 +58,12 @@ Prediction*. KDD 2018. https://arxiv.org/abs/1706.06978
 
 Use [`papers/TEMPLATE.md`](papers/TEMPLATE.md) as the starting point for
 every new paper summary — copy it, rename it, and fill in each section.
+
+## Finding papers to summarize
+
+New candidate papers don't have to be found manually — see
+[`discovery/README.md`](discovery/README.md) for the automated weekly
+workflow that searches arXiv for ads-ranking / ads-tech ML papers and
+files each one as a GitHub issue (labeled `paper-candidate`) for you to
+triage. Once you approve a candidate, trigger a Claude Code session to
+follow the process above and write its summary.
