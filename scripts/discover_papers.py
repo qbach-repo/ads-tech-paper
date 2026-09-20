@@ -10,10 +10,10 @@ re-surface the same paper.
 import json
 import os
 import re
-import urllib.parse
-import urllib.request
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
+
+import requests
 
 ATOM_NS = "{http://www.w3.org/2005/Atom}"
 ARXIV_NS = "{http://arxiv.org/schemas/atom}"
@@ -72,18 +72,30 @@ def fetch_arxiv(query: str, max_results: int) -> bytes:
         "sortBy": "submittedDate",
         "sortOrder": "descending",
     }
-    url = "https://export.arxiv.org/api/query?" + urllib.parse.urlencode(params)
-    req = urllib.request.Request(
-        url,
-        headers={
-            # arXiv's front end returns 406 Not Acceptable to requests that
-            # don't send a real Accept header (default urllib sends none).
-            "Accept": "application/atom+xml,application/xml;q=0.9,*/*;q=0.8",
-            "User-Agent": "ads-tech-paper-discovery/1.0 (github.com/qbach-repo/ads-tech-paper)",
-        },
+    # export.arxiv.org's front end returns 406 Not Acceptable to bare
+    # urllib requests (few/no headers). requests sends a fuller,
+    # browser-like header set (Accept-Encoding, Connection, etc.) by
+    # default, which is enough to get past it.
+    headers = {
+        "User-Agent": (
+            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+            "(KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 "
+            "ads-tech-paper-discovery/1.0 (github.com/qbach-repo/ads-tech-paper)"
+        ),
+        "Accept": "application/atom+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+    }
+    resp = requests.get(
+        "https://export.arxiv.org/api/query",
+        params=params,
+        headers=headers,
+        timeout=30,
     )
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        return resp.read()
+    if not resp.ok:
+        print(f"arXiv request failed: {resp.status_code} {resp.reason}")
+        print(resp.text[:2000])
+    resp.raise_for_status()
+    return resp.content
 
 
 def parse_entries(xml_bytes: bytes) -> list[dict]:
