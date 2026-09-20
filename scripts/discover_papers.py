@@ -72,9 +72,15 @@ def fetch_arxiv(query: str, max_results: int) -> bytes:
         "sortBy": "submittedDate",
         "sortOrder": "descending",
     }
-    url = "http://export.arxiv.org/api/query?" + urllib.parse.urlencode(params)
+    url = "https://export.arxiv.org/api/query?" + urllib.parse.urlencode(params)
     req = urllib.request.Request(
-        url, headers={"User-Agent": "ads-tech-paper-discovery/1.0"}
+        url,
+        headers={
+            # arXiv's front end returns 406 Not Acceptable to requests that
+            # don't send a real Accept header (default urllib sends none).
+            "Accept": "application/atom+xml,application/xml;q=0.9,*/*;q=0.8",
+            "User-Agent": "ads-tech-paper-discovery/1.0 (github.com/qbach-repo/ads-tech-paper)",
+        },
     )
     with urllib.request.urlopen(req, timeout=30) as resp:
         return resp.read()
