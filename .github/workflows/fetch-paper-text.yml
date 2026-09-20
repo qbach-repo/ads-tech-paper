@@ -1,0 +1,32 @@
+name: Fetch paper text
+
+on:
+  workflow_dispatch:
+    inputs:
+      arxiv_ids:
+        description: 'Space or comma separated arXiv IDs (e.g. 2609.12375 2609.14493)'
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Python dependencies
+        run: pip install -r scripts/requirements.txt
+
+      - name: Fetch and print paper text
+        run: |
+          IDS="${{ github.event.inputs.arxiv_ids }}"
+          IDS="${IDS//,/ }"
+          python scripts/fetch_paper_text.py $IDS
